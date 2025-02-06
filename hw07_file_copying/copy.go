@@ -20,12 +20,12 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 			if err != nil {
 				err = closeErr
 			} else {
-				err = fmt.Errorf("%w; %v", err, closeErr)
+				err = fmt.Errorf("%w; %w", err, closeErr)
 			}
 		}
 	}
 
-	f1, err := os.OpenFile(fromPath, os.O_RDONLY, 0666)
+	f1, err := os.OpenFile(fromPath, os.O_RDONLY, 0o666)
 	if err != nil {
 		return err
 	}
