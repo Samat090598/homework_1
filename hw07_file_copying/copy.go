@@ -15,7 +15,7 @@ var (
 func Copy(fromPath, toPath string, offset, limit int64) error {
 	var err error
 
-	wrapErr := func(file *os.File) {
+	handleErr := func(file *os.File) {
 		if closeErr := file.Close(); closeErr != nil {
 			if err != nil {
 				err = closeErr
@@ -29,7 +29,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		return err
 	}
-	defer wrapErr(f1)
+	defer handleErr(f1)
 
 	fi, err := f1.Stat()
 	if err != nil {
@@ -49,7 +49,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		return err
 	}
-	defer wrapErr(f2)
+	defer handleErr(f2)
 
 	_, err = f1.Seek(offset, 0)
 	if err != nil {
