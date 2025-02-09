@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"log/slog"
+	"os"
 )
 
 var (
@@ -18,5 +20,9 @@ func init() {
 
 func main() {
 	flag.Parse()
-	Copy(from, to, offset, limit)
+	err := Copy(from, to, offset, limit)
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
 }
