@@ -6,9 +6,7 @@ import (
 	"os"
 )
 
-var (
-	ErrNotEnoughArguments = errors.New("not enough arguments")
-)
+var ErrNotEnoughArguments = errors.New("not enough arguments")
 
 func main() {
 	args := os.Args
