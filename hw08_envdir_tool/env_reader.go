@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -17,6 +18,10 @@ type EnvValue struct {
 	NeedRemove bool
 }
 
+var (
+	ErrInvalidCharacterInFileName = "invalid character in the file name"
+)
+
 // ReadDir reads a specified directory and returns map of env variables.
 // Variables represented as files where filename is name of variable, file first line is a value.
 func ReadDir(dir string) (Environment, error) {
@@ -28,6 +33,10 @@ func ReadDir(dir string) (Environment, error) {
 	}
 
 	for _, file := range files {
+		if strings.Contains(file.Name(), "=") {
+			return nil, errors.New(ErrInvalidCharacterInFileName)
+		}
+
 		err = readFile(dir, file.Name(), environment)
 		if err != nil {
 			return nil, err
@@ -60,7 +69,7 @@ func readFile(dir string, fileName string, environment Environment) (err error) 
 
 	if scanner.Scan() {
 		environment[fileName] = EnvValue{
-			Value: strings.TrimRight(string(bytes.Replace(scanner.Bytes(), []byte{0x00}, []byte("\n"), -1)), "\t &nbsp",),
+			Value: strings.TrimRight(string(bytes.Replace(scanner.Bytes(), []byte{0x00}, []byte("\n"), -1)), "\t &nbsp"),
 		}
 	} else if err = scanner.Err(); err != nil {
 		return
