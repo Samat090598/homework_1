@@ -1,5 +1,12 @@
 package main
 
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"path"
+)
+
 type Environment map[string]EnvValue
 
 // EnvValue helps to distinguish between empty files and files with the first empty line.
@@ -11,6 +18,50 @@ type EnvValue struct {
 // ReadDir reads a specified directory and returns map of env variables.
 // Variables represented as files where filename is name of variable, file first line is a value.
 func ReadDir(dir string) (Environment, error) {
-	// Place your code here
-	return nil, nil
+	environment := make(Environment)
+
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, fmt.Errorf("read dir err: %w", err)
+	}
+
+	for _, file := range files {
+		err = readFile(dir, file.Name(), environment)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return environment, nil
+}
+
+func readFile(dir string, fileName string, environment Environment) (err error) {
+	file, err := os.OpenFile(path.Join(dir, fileName), os.O_RDONLY, 0o666)
+	if err != nil {
+		return fmt.Errorf("open file err: %w", err)
+	}
+
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			if err != nil {
+				err = fmt.Errorf("%w; %w", err, closeErr)
+				return
+			}
+
+			err = closeErr
+		}
+	}()
+
+	scanner := bufio.NewScanner(file)
+	environment[fileName] = EnvValue{}
+
+	if scanner.Scan() {
+		environment[fileName] = EnvValue{
+			Value: scanner.Text(),
+		}
+	} else if err = scanner.Err(); err != nil {
+		return
+	}
+
+	return nil
 }
