@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"path"
+	"strings"
 )
 
 type Environment map[string]EnvValue
@@ -36,6 +38,8 @@ func ReadDir(dir string) (Environment, error) {
 }
 
 func readFile(dir string, fileName string, environment Environment) (err error) {
+	environment[fileName] = EnvValue{}
+
 	file, err := os.OpenFile(path.Join(dir, fileName), os.O_RDONLY, 0o666)
 	if err != nil {
 		return fmt.Errorf("open file err: %w", err)
@@ -53,11 +57,10 @@ func readFile(dir string, fileName string, environment Environment) (err error) 
 	}()
 
 	scanner := bufio.NewScanner(file)
-	environment[fileName] = EnvValue{}
 
 	if scanner.Scan() {
 		environment[fileName] = EnvValue{
-			Value: scanner.Text(),
+			Value: strings.TrimRight(string(bytes.Replace(scanner.Bytes(), []byte{0x00}, []byte("\n"), -1)), "\t"),
 		}
 	} else if err = scanner.Err(); err != nil {
 		return
