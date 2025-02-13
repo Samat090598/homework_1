@@ -64,6 +64,10 @@ func readFile(dir string, fileName string, environment Environment) (err error) 
 		}
 	} else if err = scanner.Err(); err != nil {
 		return
+	} else {
+		environment[fileName] = EnvValue{
+			NeedRemove: true,
+		}
 	}
 
 	return nil
