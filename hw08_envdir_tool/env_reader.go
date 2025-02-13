@@ -67,7 +67,7 @@ func readFile(dir string, fileName string, environment Environment) (err error) 
 
 	if scanner.Scan() {
 		environment[fileName] = EnvValue{
-			Value: strings.TrimRight(string(bytes.Replace(scanner.Bytes(), []byte{0x00}, []byte("\n"), -1)), "\t &nbsp"),
+			Value: strings.TrimRight(string(bytes.ReplaceAll(scanner.Bytes(), []byte{0x00}, []byte("\n"))), "\t &nbsp"),
 		}
 	} else if err = scanner.Err(); err != nil {
 		return
