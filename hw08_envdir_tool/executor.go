@@ -15,7 +15,12 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		return
 	}
 
-	command := exec.Command(cmd[0], cmd[1:]...)
+	path, err := exec.LookPath(cmd[0])
+	if err != nil {
+		slog.Error(fmt.Errorf("cmd run err: %w", err).Error())
+	}
+
+	command := exec.Command(path, cmd[1:]...)
 
 	command.Stdin = os.Stdout
 	command.Stdout = os.Stdout
@@ -31,24 +36,26 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 
 func fillEnv(env Environment) error {
 	for key, val := range env {
-		if !val.NeedRemove {
-			_, ok := os.LookupEnv(key)
-			if ok {
-				err := os.Unsetenv(key)
-				if err != nil {
-					return fmt.Errorf("unset env err: %w", err)
-				}
-			}
-
-			err := os.Setenv(key, val.Value)
-			if err != nil {
-				return fmt.Errorf("set env err: %w", err)
-			}
-		} else {
+		if val.NeedRemove {
 			err := os.Unsetenv(key)
 			if err != nil {
 				return fmt.Errorf("unset env err: %w", err)
 			}
+
+			continue
+		}
+
+		_, ok := os.LookupEnv(key)
+		if ok {
+			err := os.Unsetenv(key)
+			if err != nil {
+				return fmt.Errorf("unset env err: %w", err)
+			}
+		}
+
+		err := os.Setenv(key, val.Value)
+		if err != nil {
+			return fmt.Errorf("set env err: %w", err)
 		}
 	}
 
