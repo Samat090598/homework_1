@@ -8,26 +8,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	ENV = Environment{
-		"EMPTY": EnvValue{
-			Value: "",
-		},
-		"FOO": EnvValue{
-			Value: `   foo
+var ENV = Environment{
+	"EMPTY": EnvValue{
+		Value: "",
+	},
+	"FOO": EnvValue{
+		Value: `   foo
 with new line`,
-		},
-		"HELLO": EnvValue{
-			Value: `"hello"`,
-		},
-		"UNSET": EnvValue{
-			NeedRemove: true,
-		},
-		"BAR": EnvValue{
-			Value: `bar`,
-		},
-	}
-)
+	},
+	"HELLO": EnvValue{
+		Value: `"hello"`,
+	},
+	"UNSET": EnvValue{
+		NeedRemove: true,
+	},
+	"BAR": EnvValue{
+		Value: `bar`,
+	},
+}
 
 func TestReadDir(t *testing.T) {
 	t.Run("simple case", func(t *testing.T) {
