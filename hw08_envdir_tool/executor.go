@@ -1,7 +1,63 @@
 package main
 
+import (
+	"fmt"
+	"log/slog"
+	"os"
+	"os/exec"
+)
+
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
-	// Place your code here.
-	return
+	err := fillEnv(env)
+	if err != nil {
+		slog.Error(fmt.Errorf("cmd run err: %w", err).Error())
+		return
+	}
+
+	path, err := exec.LookPath(cmd[0])
+	if err != nil {
+		slog.Error(fmt.Errorf("cmd run err: %w", err).Error())
+	}
+
+	command := exec.Command(path, cmd[1:]...)
+
+	command.Stdin = os.Stdout
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+
+	if err := command.Run(); err != nil {
+		slog.Error(fmt.Errorf("cmd run err: %w", err).Error())
+		return command.ProcessState.ExitCode()
+	}
+
+	return command.ProcessState.ExitCode()
+}
+
+func fillEnv(env Environment) error {
+	for key, val := range env {
+		if val.NeedRemove {
+			err := os.Unsetenv(key)
+			if err != nil {
+				return fmt.Errorf("unset env err: %w", err)
+			}
+
+			continue
+		}
+
+		_, ok := os.LookupEnv(key)
+		if ok {
+			err := os.Unsetenv(key)
+			if err != nil {
+				return fmt.Errorf("unset env err: %w", err)
+			}
+		}
+
+		err := os.Setenv(key, val.Value)
+		if err != nil {
+			return fmt.Errorf("set env err: %w", err)
+		}
+	}
+
+	return nil
 }
