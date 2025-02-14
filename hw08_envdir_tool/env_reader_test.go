@@ -9,11 +9,11 @@ import (
 )
 
 func TestReadDir(t *testing.T) {
-	dir, _ := os.Getwd()
-
-	dir = path.Join(dir, "testdata/env")
-
 	t.Run("simple case", func(t *testing.T) {
+		dir, _ := os.Getwd()
+
+		dir = path.Join(dir, "testdata/env")
+
 		environment := Environment{
 			"EMPTY": EnvValue{
 				Value: "",
@@ -33,8 +33,17 @@ with new line`,
 			},
 		}
 
-		result, _ := ReadDir(dir)
+		result, err := ReadDir(dir)
 
+		require.NoError(t, err)
 		require.Equal(t, environment, result)
+	})
+
+	t.Run("incorrect dir", func(t *testing.T) {
+		dir, _ := os.Getwd()
+		dir = path.Join(dir, "test")
+
+		_, err := ReadDir(dir)
+		require.Error(t, err)
 	})
 }
